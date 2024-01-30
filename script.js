@@ -1,129 +1,194 @@
-const clearBtn = document.querySelector(".clear");
-const deleteBtn = document.querySelector(".deleteBtn");
-const numberButtons = document.querySelectorAll(".number");
-const operators = document.querySelectorAll(".operator");
-// small display displays previous value
-const previousOperand = document.querySelector(".previous-operand");
-// large display displays current value
-const currentOperand = document.querySelector(".current-operand");
-const equal = document.querySelector(".equal");
-const decimalBtn = document.querySelector(".decimal");
-
-// adds decimal to current value
-const decimal = () => {
-  if (!currentValue.includes(".")) {
-    currentValue += ".";
-  }
-};
-
-decimalBtn.addEventListener("click", () => {
-  decimal();
-  currentOperand.textContent = currentValue;
-});
-
-// Odin Project Calculator Step By Step
-
-// Step 1 - functions for all of the basic math operators
-const add = (a, b) => a + b;
-const subtract = (a, b) => a - b;
-const multiply = (a, b) => a * b;
-const divide = (a, b) => a / b;
-
-// Step 2 - Create three variables for each of the parts of a calculator operation
+// Basic variables to store values
 let operatorValue = "";
 let previousValue = "";
 let currentValue = "";
-let result = "";
-// Step 3 - Create a new function operate that takes an operator and 2 numbers
 
-function operate(operator, num1, num2) {
-  switch (operator) {
-    case "+":
-      return add(num1, num2);
-    case "-":
-      return subtract(num1, num2);
-    case "x":
-      return multiply(num1, num2);
-    case "÷": {
-      if (num2 === 0) {
-        return "Invalid Action";
-      }
-      return divide(num1, num2);
-    }
-    default:
-      return "Invalid Operator";
-  }
-}
+// display divs
+const previousOperand = document.querySelector(".previous-operand");
+const currentOperand = document.querySelector(".current-operand");
 
-// Step 4 - Create a basic HTML calculator with buttons
-
-// Step 5 - Create the functions that populate the display when you click the number buttons
-
-// handles / updates current number value
-const handleNumber = (num) => {
-  if (currentValue.length <= 15) {
-    currentValue += num;
-  }
-};
-
-// listens for click of each number buttons and updates display of current value
-numberButtons.forEach((btn) => {
-  btn.addEventListener("click", (e) => {
-    handleNumber(e.target.textContent);
-    currentOperand.textContent = currentValue;
-  });
-});
-
-// similar like handleNumber function above but this handles operators
-const handleOperator = (op) => {
-  operatorValue = op;
-  previousValue = currentValue;
-  currentValue = "";
-};
-
-// listens for click of each operators and adds to current value and updates display
-operators.forEach((op) => {
-  op.addEventListener("click", function (e) {
-    if (currentValue !== "") {
-      handleOperator(e.target.textContent);
-      previousOperand.textContent = previousValue + " " + operatorValue;
-      currentOperand.textContent = "";
-    }
-  });
-});
-
-// Step 6 - Make the calculator work!
-
-equal.addEventListener("click", equals);
-
-function equals() {
-  if (currentValue !== "" && previousValue !== "" && operatorValue !== "") {
-    previousValue = Number(previousValue);
-    currentValue = Number(currentValue);
-    result = operate(operatorValue, previousValue, currentValue);
-    previousOperand.textContent = "";
-    currentOperand.textContent = result;
-  }
-}
-
-// Step 7
-
-// clear button resets everything
+// clear button runs clearAll function on click
+const clearBtn = document.querySelector(".clear");
 clearBtn.addEventListener("click", clearAll);
 
+// clearAll function resets everything
 function clearAll() {
   previousValue = "";
   currentValue = "";
   operatorValue = "";
   previousOperand.textContent = "";
   currentOperand.textContent = "";
-  result = "";
 }
 
-// Delete button
+// delete buttons runs deleteNumber function on click
+const deleteBtn = document.querySelector(".deleteBtn");
 deleteBtn.addEventListener("click", deleteNumber);
 
+// deleteNumber function removes the last number from the currentValue
 function deleteNumber() {
-  currentValue = currentValue.toString().slice(0, -1);
-  currentOperand.textContent = currentValue;
+  if (currentValue !== "") {
+    currentValue = currentValue.slice(0, -1);
+    currentOperand.textContent = currentValue;
+    if (currentValue === "") {
+      currentDisplayNumber.textContent = "";
+    }
+  }
+  if (currentValue === "" && previousValue !== "" && operatorValue === "") {
+    previousValue = previousNum.slice(0, -1);
+    currentOperand.textContent = previousValue;
+  }
+}
+
+// decimal button adds a "." to the current value
+const decimalBtn = document.querySelector(".decimal");
+decimalBtn.addEventListener("click", () => {
+  decimal();
+});
+const decimal = () => {
+  if (!currentValue.includes(".")) {
+    currentValue += ".";
+    currentOperand.textContent = currentValue;
+  }
+};
+
+// selects all button with class of number
+const numberButtons = document.querySelectorAll(".number");
+// iterates over each number and updates handlenNumber
+numberButtons.forEach((btn) => {
+  btn.addEventListener("click", (e) => {
+    handleNumber(e.target.textContent);
+  });
+});
+
+// updates number on display and values
+const handleNumber = (num) => {
+  if (previousValue !== "" && currentValue !== "" && operatorValue === "") {
+    previousValue = "";
+    currentOperand.textContent = currentValue;
+  }
+  if (currentValue.length <= 15) {
+    currentValue += num;
+    currentOperand.textContent = currentValue;
+  }
+};
+
+// selects all buttons with class of operators
+const operators = document.querySelectorAll(".operator");
+
+// iterates over each operator button and handlesOperator
+operators.forEach((op) => {
+  op.addEventListener("click", (e) => {
+    handleOperator(e.target.textContent);
+  });
+});
+
+// updates operatorValue and displays operators
+const handleOperator = (op) => {
+  if (previousValue === "") {
+    previousValue = currentValue;
+    operatorCheck(op);
+  } else if (currentValue === "") {
+    operatorCheck(op);
+  } else {
+    operate();
+    operatorValue = op;
+    currentOperand.textContent = "";
+    previousOperand.textContent = previousValue + " " + operatorValue;
+  }
+};
+
+const operatorCheck = (txt) => {
+  operatorValue = txt;
+  previousOperand.textContent = previousValue + " " + operatorValue;
+  currentOperand.textContent = "";
+  currentValue = "";
+};
+
+// equal button
+const equal = document.querySelector(".equal");
+// event listener that runs operate function on click
+equal.addEventListener("click", equals);
+function equals() {
+  if (currentValue !== "" && previousValue !== "") {
+    operate();
+  }
+}
+// operate function
+const operate = () => {
+  // converts the values from string to number to evaluate
+  previousValue = Number(previousValue);
+  currentValue = Number(currentValue);
+
+  // basic math functions
+  if (operatorValue === "+") {
+    previousValue += currentValue;
+  } else if (operatorValue === "-") {
+    previousValue -= currentValue;
+  } else if (operatorValue === "x") {
+    previousValue *= currentValue;
+  } else if (operatorValue === "÷") {
+    // throws error when divided by 0
+    if (currentValue <= 0) {
+      previousValue = "ERROR";
+      displayResult();
+      return;
+    }
+    previousValue /= currentValue;
+  }
+
+  // rounds the number when divided by lengthy numbers ex: 1/3
+  previousValue = roundNumber(previousValue);
+  // converts from number to string to display and runs displayResult function
+  previousValue = previousValue.toString();
+  displayResult();
+};
+ 
+// roundNumber function
+const roundNumber = (num) => {
+  return Math.round(num * 100000) / 100000;
+};
+
+// display result function
+const displayResult = () => {
+  if (previousValue.length <= 15) {
+    currentOperand.textContent = previousValue;
+  } else {
+    currentOperand.textContent = previousValue;
+  }
+  previousOperand.textContent = "";
+  operatorValue = "";
+  currentValue = "";
+};
+
+// Keyboard functions
+
+// listens for key press
+window.addEventListener("keydown", handleKeyPress);
+
+function handleKeyPress(e) {
+  e.preventDefault();
+  if (e.key >= 0 && e.key <= 9) {
+    handleNumber(e.key);
+  }
+  if (
+    e.key === "Enter" ||
+    (e.key === "=" && currentNum != "" && previousNum != "")
+  ) {
+    operate();
+  }
+  if (e.key === "+" || e.key === "-") {
+    handleOperator(e.key);
+  }
+  if (e.key === "/") {
+    handleOperator("÷");
+  }
+  if (e.key === "*") {
+    handleOperator("x");
+  }
+  if (e.key === ".") {
+    decimal();
+  }
+  if (e.key === "Backspace") {
+    deleteNumber();
+  }
 }
